@@ -129,8 +129,7 @@ RESET:
   JSR ClearNameTables
 
   ; Set up the PPU. This is self explanatory, but I'll break it down.
-  ; Turn on Non-Maskable Interupts on VBlank
-  ; Set Backgrounds to CHR Page 1
+  ; Set Backgrounds to CHR Page 0
   ; Increment PPU address by 1 (horizontal rendering)
   ; Set Nametable to PPU Address $2000 (Top-Left)
   ; We'll actually be writing to the nametable at $2800 (Bottom-Left), but with
