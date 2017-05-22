@@ -6,8 +6,8 @@ ___
 
 ## Why?
 
-  Why the hell not? People still make NES games, but not enough people are 
-making/releasing them like they should. The way I see it, anything that makes 
+  Why not? People still make NES games, but not enough people are making
+and releasing them like they should. The way I see it, anything that makes
 it a little easier for someone on the fence or struggling up the slope is 
 better for everyone.
 
@@ -144,25 +144,28 @@ For a list of further functions and aliases, read the library source code. I've
 tried to comment it thoroughly so that it's easy to understand everything going
 on under the hood.
 
-The example program, as well as the library, are built with the Ophis assembler
+The example programs, as well as the library, are built with the Ophis assembler
 which is freely available for Windows, Linux and Mac OS X, and written in 
 Python. If you don't already have it, you can grab it [here](http://michaelcmartin.github.io/Ophis/). Once you have it
-installed and in your path, just navigate to the "example" folder and run the 
-following command:
+installed and in your path, just navigate to the "examples" folder, find the
+ROM you want to build, and run the following command in that folder:
 
->ophis BuildExampleROM.oph
+>ophis BuildROM.oph
 
-This should place the "example.nes" ROM in the example/bin folder. You can now 
+This should place the assembled NES ROM in the example/bin folder. You can now 
 run this in the emulator of your choice. But what about real hardware, you ask?
 The process is a bit different, as the NES uses two separate ROM files, one for
 code and data, and another for graphics. To produce the PRG (Program) ROM, run
 
->ophis BuildExamplePRG.oph
+>ophis BuildPRG.oph
 
-This will assemble an "example.prg" file containing only the contents of the 
-PRG ROM, suitable for burning to a 32KB EEPROM or flashing to a cartridge. The 
-CHR ROM is a bit easier, as it's pre-built. Just burn the "example.chr" to an
-8KB EEPROM or flash it to your cartridge.
+This will assemble a .PRG file containing only the contents of the 
+PRG ROM, suitable for burning to a 16KB/32KB EEPROM (depending on PRG size) or 
+flashing to a cartridge. The CHR ROM will either be  pre-built, or have its own
+build script. Either burn the included .CHR file to an 8KB EEPROM, flash it to 
+your cartridge, or run the following command if there's no 8KB CHR.
+
+>ophis BuildCHR.oph
 
 I may write better documentation at some point, but I think I should improve it
 some more first, and add more functionality. The library is far from in a 
@@ -220,7 +223,7 @@ ___
 ## Credits
 
 ### Graphics
-Game tiles and screen arrangements by [Ryan Souders (HonkeyKong)](http://www.honkeykong.org/)
+Game tiles and screen arrangements by [Ryan Souders (HonkeyKong)](http://www.honkeykong.org/) and [Carl Olsson (Surt)](https://opengameart.org/users/surt)
 
 ### Programming
 Library programming and tool development by [Ryan Souders (HonkeyKong)](http://www.honkeykong.org/)

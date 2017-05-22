@@ -1,0 +1,7 @@
+; This is extremely simple. Just concatenate both CHR banks together.
+.outfile "SimpleScroll.chr"
+
+; Build the 8KB character ROM.
+.incbin "simple1.chr"			; Background Graphics
+.incbin "4kblanks.chr"          ; 4KB of zeroes to pad it to 8KB.
+

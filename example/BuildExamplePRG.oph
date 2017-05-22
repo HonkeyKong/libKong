@@ -1,6 +1,0 @@
-; This is extremely simple. Just assemble the code
-; and dump it out to a raw binary file.
-.outfile "bin/example.prg"
-
-; Build the 32KB program ROM.
-.include "main.asm"			; PRG-ROM code
