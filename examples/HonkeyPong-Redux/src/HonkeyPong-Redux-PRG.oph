@@ -1,0 +1,5 @@
+; HonkeyPong-Redux 32KB PRG-ROM
+
+; This needs no explanation.
+
+.include "main.asm" 				; 32KB Main program bank.

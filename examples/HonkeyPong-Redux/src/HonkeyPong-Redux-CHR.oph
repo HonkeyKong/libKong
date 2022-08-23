@@ -1,0 +1,5 @@
+; HonkeyPong Redux 8KB CHR-ROM
+; Like the PRG-ROM assembly, this is self-explanatory.
+
+.incbin "../res/chr/reduxtiles.chr"
+.incbin "../res/chr/retrocard4k.chr"

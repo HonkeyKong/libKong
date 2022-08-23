@@ -14,7 +14,7 @@
   ; This header contains our main zero-page requirements.
   ; Don't allocate before $20.
   ; 32 bytes on the zero page should be enough for libKong.
-  .include "../../KongZP.asm"
+  .include "../../ZeroPage/MainZP.asm"
 
   ; Starting here leaves a 16-byte boundary between
   ; the libKong allocation and our ZP requisites.
@@ -63,10 +63,10 @@
   .org $8000
 
   .include "../../KongSetup.asm"      ; libKong NES setup
-  .include "../../KongPPU.asm"        ; libKong PPU code
+  .include "../../Video/KongPPU.asm"        ; libKong PPU code
   .include "../../KongMacros.asm"     ; libKong Macros
-  .include "../../KongRender.asm"     ; Rendering routines
-  .include "../../KongInput.asm"      ; Controller handler
+  .include "../../Video/KongRender.asm"     ; Rendering routines
+  .include "../../Input/KongInput.asm"      ; Controller handler
 
   ; Set up some strings.
 
@@ -77,7 +77,7 @@
   .byte 19
 
   copyrightText:
-  .byte "`2017 Ryan D. Souders"
+  .byte "`2019 Ryan D. Souders"
     
   ctLength:
   .byte 21

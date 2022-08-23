@@ -1,0 +1,22 @@
+; This is our main build file, where everything is put together
+; in the common iNES format, accepted by most NES emulators.
+
+; Tell the assembler the name of the output file.
+.outfile "ChuckyTitleMMC1.nes"
+
+; Build the iNES ROM header
+.byte "NES"			; File Descriptor
+.byte $1A 			; MS-DOS EOF
+.byte $02			; 2 16KB PRG banks
+.byte $00 			; 0 8KB CHR banks (CHR-RAM)
+.byte %00010001	; Memory flags
+; Vertical Mirroring, no SRAM, no trainer, Mapper 1 (MMC1).
+.byte %00000000	; System Flags
+; No mapper high bits, No VS Unisystem or PC-10
+.byte $00 			; No PRG-RAM, inferring 8KB for compatibility.
+.byte $00 			; TV system specification (NTSC)
+.byte %00010000	; TV Specification bits (NTSC), no SRAM, no bus conflicts.
+.byte $00,$00,$00,$00,$00 ; Zero-fill remaining header bytes.
+
+; Next, build the 32KB program ROM.
+.include "BuildPRG.oph"			; PRG-ROM code

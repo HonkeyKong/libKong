@@ -5,6 +5,8 @@
   .space  BlankTiles        1   ; Counter for blank tiles.
   .space  BlankRows         1   ; Counter for blank rows.
   .space  MapAddr           2   ; Address of tile map for bulk transfer.
+  .space  StrAddr           2   ; Address of string in ROM for optimized rendering.
+  .space  NTTmp             1   ; Temporary storage of upper byte for text rendering.
   .space  NTPtr             2   ; Address for NameTable Pointer.
   .space  BGPtrLow          1   ; Low byte of BG Pointer for restoration.
   .space  BgPtr             2   ; Pointer to Background address.
@@ -27,4 +29,7 @@
   .space  Port1Sig          1   ; Signature byte of port 1
   .space  Port2Sig          1   ; Signature byte of port 2
   .space  HasFourScore      1   ; Whether or not a 4-player adapter exists.
-; Allocated to $1F
+  
+  ; These variables will probably be moved into a separate ZP header.
+
+; Allocated to $22

@@ -12,7 +12,7 @@ ResetNES:
 ClearRAM:			; Should be self-explanatory.
 	LDX	#$00
 *	LDA	#$00
-	STA	$000,X
+	STA	$00,X
 	; $100-$1FF contains the stack, call `clearStack instead.
 	; $200-$2FF is our OAM copy. Clear with JSR ClearSprites.
 	STA	$300,X
