@@ -119,7 +119,7 @@
   .space  TileUpdated         1   ; Flag raised when Tile Set is updated.
   .space  TextUpdated         1   ; Flag raised when Font is updated.
   .space  MusicUpdated        1   ; Flag raised when Music is updated.
-  .space  TextOffset          2   ; Offset in nametable where text is written.
+  ;.space  TextOffset          2   ; Offset in nametable where text is written.
   .space  TitleCursorIndex    1   ; Y Index of Title Screen Cursor.
   .space  PaletteIndex        1   ; Index of game Palette.
   .space	numPlayers				  1   ; number of players

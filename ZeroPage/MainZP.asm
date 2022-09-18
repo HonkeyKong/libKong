@@ -8,6 +8,7 @@
   .space  StrAddr           2   ; Address of string in ROM for optimized rendering.
   .space  NTTmp             1   ; Temporary storage of upper byte for text rendering.
   .space  NTPtr             2   ; Address for NameTable Pointer.
+  .space  TextOffset        2   ; Nametable offset for text rendering.
   .space  BGPtrLow          1   ; Low byte of BG Pointer for restoration.
   .space  BgPtr             2   ; Pointer to Background address.
   .space  AttrPtr           2   ; Pointer to Attribute address.
@@ -32,4 +33,4 @@
   
   ; These variables will probably be moved into a separate ZP header.
 
-; Allocated to $22
+; Allocated to $24
