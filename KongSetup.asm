@@ -7,6 +7,15 @@ ResetNES:
 	STX PPUControl1		; disable NMI
 	STX PPUControl2		; disable rendering
 	STX $4010			; disable DMC IRQs
+	PLA					; Pull our return address off the old stack.
+	TAY
+	PLA
+	LDX #$FF
+	TXS					; Point the stack at the top of its page.
+	PHA					; Put the return address back on the new stack.
+	TYA
+	PHA
+	LDX #$00
 	RTS
 
 ClearRAM:			; Should be self-explanatory.
@@ -35,7 +44,6 @@ InitZP:
   LDX #$00
 * STA $00, X
   INX
-  CPX #$FF
   BNE -
   RTS
 
@@ -52,6 +60,5 @@ InitZP:
 _clearByte:
 	STA $100,X
 	INX
-	CPX #$FF
 	BNE _clearByte
 .macend

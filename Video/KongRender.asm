@@ -53,8 +53,7 @@ RenderNameTable:      ; X = Low byte, Y = High byte. A = NT0, NT1, NT2, or NT3
 * LDA (MapAddr), Y    ; Load nametable byte at MapAddr, incremented by Y
   STA VRAMIO          ; Write byte through VRAM I/O register.
   INY                 ; Increment low byte counter
-  CPY #$FF            ; Have we written 256 bytes yet? (8-bit limit)
-  BNE -               ; If not, loop back.
+  BNE -               ; Loop back until Y wraps. (256 bytes written)
   INC MapAddr+1       ; If so, increment high byte of map address
   DEX                 ; Decrease loop counter.
   CPX #$00            ; Are there any loops left?

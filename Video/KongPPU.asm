@@ -156,8 +156,8 @@ ClearNameTables:			; Clear the name tables.
 ; X position to the far right.
 ClearSprites:
   LDA #$FE 
+  LDX #$00
 * STA $200,X
   INX
-  CPX #$FF
   BNE	-
   RTS

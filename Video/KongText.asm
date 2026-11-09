@@ -4,21 +4,30 @@
 ; into a terminating character ($FF), grabs the next 
 ; string & repeats until the screen terminator. ($FE)
 
+; Moves Y to the next byte of the text data, and moves
+; to the next page of the data when Y wraps around.
+.macro nextStrByte
+  INY
+  BNE _samePage
+  INC StrAddr+1
+_samePage:
+.macend
+
 RenderTextScreen:
   STX StrAddr         ; Store lower string address
   STY StrAddr+1       ; Store upper string address
   STA NtTmp           ; Store upper nametable address
   
-  LDY #$FF            ; Load Y with $FF so it overflows
-                      ; when the loop starts with INY.
-* INY                 ; Start loop, increment Y
+  LDY #$00            ; Start at the first byte of the data.
+TextNextString:
   LDA NtTmp           ; Load Upper nametable byte
   STA TextOffset+1    ; Store in upper offset.
+  LDA #$00            ; Clear the accumulator
+  STA TextOffset      ; Store in lower offset.
   
   LDA (StrAddr), Y    ; Load the Y position.
   TAX                 ; Transfer A to X
-  LDA #$00            ; Clear the accumulator
-  STA TextOffset      ; Store in lower offset.
+  BEQ TextAddColumn   ; Row 0 doesn't need any rows added.
 * LDA TextOffset      ; Load lower offset
   CLC                 ; Clear carry bit
   ADC #$20            ; Add 32 (Increment by one row of tiles)
@@ -27,25 +36,17 @@ RenderTextScreen:
   ADC #$00            ; Add 0 (But keep the carry bit)
   STA TextOffset+1    ; Store result (!Not Useless!)
   DEX                 ; Decrement X
-  CPX #$00            ; Check if we've run out of loops
-  BNE -               ; Branch up if not equal (keep adding)
+  BNE -               ; Keep adding until we run out of rows.
   
-  INY                 ; Increment Y to seek X position
+TextAddColumn:
+  `nextStrByte        ; Seek X position
   LDA (StrAddr), Y    ; Load X position into accumulator
   CLC                 ; Clear carry bit
   ADC TextOffset      ; Add the text offset
-  STA TextOFfset      ; Store the new offset
-  LDA TextOFfset+1    ; Load the upper offset
+  STA TextOffset      ; Store the new offset
+  LDA TextOffset+1    ; Load the upper offset
   ADC #$00            ; Add the carry bit
   STA TextOffset+1    ; Store new upper offset
-  
-  LDA TextOffset      ; Load text offset
-  SEC                 ; Set the carry bit
-  SBC #$01            ; Subtract 1
-  STA TextOffset
-  LDA TextOffset+1
-  SBC #$00
-  STA TextOffset+1
   
   LDA PPUStatus       ; Latch the PPU register
   
@@ -54,21 +55,19 @@ RenderTextScreen:
   LDA TextOffset      ; Load lower offset
   STA VRAMAddr        ; Write to address register
   
+  `nextStrByte        ; Seek the first character
 * LDA (StrAddr), Y    ; Load next byte in string
   CMP #$FE            ; Is it an end-of-screen marker?
-  BEQ ++              ; Yes? RTS.
-  LDA (StrAddr), Y    ; No? Let's load it again.
+  BEQ TextDone        ; Yes? RTS.
   CMP #$FF            ; Is it an end of string marker?
-  BEQ ---             ; Yes? Branch back to the start of the loop.
-  CPY #$FF            ; Is Y about to overflow?
-  BNE +               ; No? Skip this next bit.
-  INC StrAddr+1       ; Increment the upper string address.
-* INY                 ; Increment Y
+  BEQ +               ; Yes? Move on to the next string.
   STA VRAMIO          ; Store byte in VRAM I/O register
-  LDA #$00            ; Clear Accumulator
-  STA TextOffset      ; Clear lower text offset
-  JMP --              ; Loop back and read next byte.
-* LDA #$00
+  `nextStrByte        ; Seek the next character
+  JMP -               ; Loop back and read next byte.
+* `nextStrByte        ; Skip the end of string marker
+  JMP TextNextString  ; Render the next string.
+TextDone:
+  LDA #$00
   STA TextOffset
   STA TextOffset+1
   RTS
