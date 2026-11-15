@@ -119,6 +119,50 @@ I haven't done much testing beyond detecting and confirming the adapter is
 connected to the console and switched into 4-player mode. It might work, it
 might not. Isn't that part of the fun of testing unfinished \***cough**\* I mean
 "Early Access" code?
+
+### The newer modules
+
+These were added while building Justice Patrol, an MMC3 game with 8-way
+scrolling and a status bar. Everything except the MMC3 additions needs
+**ZeroPage/KongExtZP.asm** included right after MainZP.asm (it runs to $42,
+so start your own zero-page variables at $48).
+
+**Mappers/KongMMC3.asm** (additions; these use MMC3 shadow bytes now at the
+end of MainZP)
+- `MMC3Init`: InitMMC3 plus IRQ off and every shadow filled in.
+- `MMC3SetBank` (X = register, A = bank): writes $8000 through the
+  `BankControl` shadow, so an interrupt that switches banks can restore it
+  with `MMC3RestoreSelect` without breaking a switch in progress.
+- `MMC3SetPRG8000` / `MMC3SetPRGA000`: map an 8KB PRG bank, remembering it.
+- `MMC3ApplyCHR`: copy the six `MMC3CHRBanks` shadows into R0-R5. Change the
+  shadows whenever, call this from NMI.
+- `MMC3SetMirroring` with `MirrorVertical` / `MirrorHorizontal`.
+- `` `MMC3FarCall bank, routine ``: call into another bank's $8000 window
+  and come back.
+- Scanline IRQs: `MMC3IRQStart` (A = scanline), `MMC3IRQStop`, and the
+  `` `MMC3IRQAck `` / `` `MMC3IRQNext `` macros for the handler. Needs BG
+  tiles at $0000 and 8x8 sprites at $1000.
+
+**Video/KongVRAMBuffer.asm**: queue nametable, attribute and palette writes
+during the frame (`VRAMBufBegin`/`VRAMBufEnd`, `VRAMBufPutByte`) and copy
+them all in from NMI with `VRAMBufFlush`. Runs can step by 1 or by 32
+(columns) or repeat one byte. Define `.alias VRAMBuffer <256 bytes of RAM>`
+before including it.
+
+**Video/KongSprites.asm**: `OAMBegin`, `OAMClearRest` and `DrawMetaSprite`.
+Metasprites are a count plus (dy, tile, attribute, dx) entries; they take a
+16-bit anchor so they can hang off any screen edge, can be mirrored
+(`MSprFlip`), palette-swapped (`MSprAttr`) and kept out of a status bar
+(`MSprClipTop`).
+
+**Video/KongFrame.asm**: `WaitFrame` (your NMI bumps `FrameCount`), and
+`RenderingOff` / `RenderingOn`, which switch the screen at the start of
+VBlank instead of mid-frame.
+
+**Input/KongInputEdge.asm**: `UpdatePressed` puts buttons that went down
+this frame in `PressedP1`/`PressedP2`.
+
+**Math/KongMath.asm**: `KongRandom` (16-bit LFSR) and `KongByteToDigits`.
 ___
 
 ## FAQ

@@ -127,3 +127,130 @@ ClearMMC3WRAM:		; Clear out MMC3 WRAM. Erases battery backup on TKROM.
   LDA #_2
   STA MMC3BankSelect
 .macend
+
+; ===================================================================
+; Shadow-safe bankswitching, IRQ scanline counter, mirroring.
+; These use the MMC3 shadow bytes at the end of ZeroPage/MainZP.asm.
+; ===================================================================
+
+; Extra flags for the bank select ($8000) register. OR them into X
+; when calling MMC3SetBank if you need them.
+  .alias  MMC3PRGFixed8000  $40   ; PRG mode 1: $C000 swappable, $8000 fixed
+
+; Values for MMC3SetMirroring.
+  .alias  MirrorVertical    $00   ; Horizontal arrangement (side-scrolling)
+  .alias  MirrorHorizontal  $01   ; Vertical arrangement (vertical scrolling)
+
+; Full MMC3 setup: banks from MMC3InitTable, vertical mirroring,
+; IRQ off, and every shadow byte filled in to match.
+MMC3Init:
+  JSR InitMMC3
+  LDX #$05
+* LDA MMC3InitTable, X
+  STA MMC3CHRBanks, X
+  DEX
+  BPL -
+  LDA MMC3InitTable+6
+  STA MMC3Bank8000
+  LDA MMC3InitTable+7
+  STA MMC3BankA000
+  LDA #$00
+  STA BankControl         ; InitMMC3 finishes by selecting register 0.
+  STA MMC3IRQOff
+  RTS
+
+; X = bank register (CHR2K0...PRG01), A = bank number.
+;
+; Every write to $8000 goes through the BankControl shadow first, so an
+; interrupt that switches banks itself can put $8000 back the way it found
+; it (see MMC3RestoreSelect) without wrecking a switch in progress here.
+MMC3SetBank:
+  STX BankControl
+  STX MMC3BankControl
+  STA MMC3BankSelect
+  RTS
+
+; Call at the end of any interrupt handler that writes to $8000.
+MMC3RestoreSelect:
+  LDA BankControl
+  STA MMC3BankControl
+  RTS
+
+; A = 8KB PRG bank to map at $8000-$9FFF. Clobbers X.
+MMC3SetPRG8000:
+  STA MMC3Bank8000
+  LDX #PRG00
+  JMP MMC3SetBank
+
+; A = 8KB PRG bank to map at $A000-$BFFF. Clobbers X.
+MMC3SetPRGA000:
+  STA MMC3BankA000
+  LDX #PRG01
+  JMP MMC3SetBank
+
+; Copy the six MMC3CHRBanks shadows into R0-R5. Change the shadows any
+; time during the frame, then call this from your NMI so the switch
+; lands during VBlank. Bank numbers are in 1KB units; R0 and R1 are 2KB
+; banks, so their low bit is ignored. Clobbers A and X.
+MMC3ApplyCHR:
+  LDX #$05
+* STX MMC3BankControl
+  LDA MMC3CHRBanks, X
+  STA MMC3BankSelect
+  DEX
+  BPL -
+  LDA BankControl
+  STA MMC3BankControl
+  RTS
+
+; A = MirrorVertical or MirrorHorizontal.
+MMC3SetMirroring:
+  STA MMC3Mirror
+  RTS
+
+; Call a routine that lives in another bank's $8000-$9FFF window, then
+; put the original bank back. Must itself run from fixed ROM ($C000+).
+; The routine's A and X results are lost; return values in memory.
+.macro MMC3FarCall            ; `MMC3FarCall bank, routine
+  LDA MMC3Bank8000
+  PHA
+  LDA #_1
+  JSR MMC3SetPRG8000
+  JSR _2
+  PLA
+  JSR MMC3SetPRG8000
+.macend
+
+; ----- Scanline IRQ -----
+;
+; The MMC3 counts rising edges on PPU address line A12. With 8x8 sprites,
+; background tiles at $0000 and sprite tiles at $1000, that's exactly one
+; tick per rendered scanline. Call MMC3IRQStart from your NMI with the
+; number of the scanline the IRQ should fire after (the interrupt arrives
+; near the end of that line, around dot 260). Remember to CLI.
+
+; A = scanline count.
+MMC3IRQStart:
+  STA MMC3IRQLatch
+  STA MMC3IRQReload
+  STA MMC3IRQOn
+  RTS
+
+MMC3IRQStop:
+  STA MMC3IRQOff
+  RTS
+
+; Put this at the top of your IRQ handler. Acknowledges the interrupt
+; and disables further ones until the next MMC3IRQStart. Keeps A.
+.macro MMC3IRQAck
+  STA MMC3IRQOff
+.macend
+
+; Chain another split from inside the IRQ handler: A = scanlines from
+; here to the next interrupt, minus one.
+.macro MMC3IRQNext
+  STA MMC3IRQOff
+  STA MMC3IRQLatch
+  STA MMC3IRQReload
+  STA MMC3IRQOn
+.macend

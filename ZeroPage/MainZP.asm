@@ -30,7 +30,13 @@
   .space  Port1Sig          1   ; Signature byte of port 1
   .space  Port2Sig          1   ; Signature byte of port 2
   .space  HasFourScore      1   ; Whether or not a 4-player adapter exists.
-  
+
+  ; MMC3 bank shadows, used by the shadow-safe routines in KongMMC3.asm.
+  ; (BankControl above doubles as the shadow of the last $8000 write.)
+  .space  MMC3Bank8000      1   ; PRG bank currently mapped at $8000-$9FFF (R6)
+  .space  MMC3BankA000      1   ; PRG bank currently mapped at $A000-$BFFF (R7)
+  .space  MMC3CHRBanks      6   ; CHR banks for R0-R5, written by MMC3ApplyCHR
+
   ; These variables will probably be moved into a separate ZP header.
 
-; Allocated to $24
+; Allocated to $2C
